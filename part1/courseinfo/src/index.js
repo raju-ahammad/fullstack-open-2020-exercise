@@ -5,15 +5,30 @@ import Header from './Header';
 import Total from './Total';
 
 const App = () => {
-  const course = "Half Stack development";
-  const exercise1 = 10;
-  const exercise2 = 7;
-  const exercise3 = 14
+  const course = {
+      name: "Half Stack development",
+      parts: [
+          {
+            name: "Fundamentals of React",
+            exercise: 10
+          },
+          {
+            name: "usinig props to pass data",
+            exercise: 7
+          },
+          {
+            name: "state of component",
+            exercise: 14
+          }
+      ]
+  }
+
+  
   return (
     <div>
-      <Header course={course} />
-      <Content />
-      <Total exercise={exercise1+exercise2+exercise3} />
+      <Header course={course}  />
+      <Content  />
+      <Total  />
     </div>
   )
 }
