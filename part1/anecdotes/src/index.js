@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
+const Button = ({text, handleClick}) => {
+  return(
+    <button onClick={ handleClick } > {text} </button>
+  );
+}
 
 const App = ({anecdotes}) => {
   const initialVote = new Array(anecdotes.length).fill(0)
@@ -24,8 +29,8 @@ const App = ({anecdotes}) => {
     <h3>Ancodate of the day</h3>
     <p>{anecdotes[selected]}</p>
     <p>has {votes[selected]} votes </p>
-    <button onClick={ voteHandle }>vote</button>
-    <button onClick={ nextCdotes }>nextanecdote</button>
+    <Button handleClick={ voteHandle } text="vote"/>
+    <Button handleClick={ nextCdotes }  text="nextanecdote" />
     <h3>Ancodates with most votes</h3>
     <p> { anecdotes[maxVoteIndex] } </p>
     <p> { votes[maxVoteIndex] } </p>
