@@ -1,4 +1,7 @@
 import { useState } from "react";
+import PersonForm from "./PersonForm";
+import PersonList from "./PersonList";
+import SearchFilter from "./SearchFilter";
 
 function App() {
 
@@ -49,44 +52,11 @@ function App() {
   return (
     <div className="">
       <h2>PhoneBook</h2>
-      <p>Search value { searchTerm }</p>
-      <div>filter shown with name <input onChange={searchHandle} value={searchTerm} type="text"/></div>
+      <SearchFilter searchHandle={searchHandle} searchTerm={searchTerm} />
       <h2>Added new phone list</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <div>
-            <label htmlFor="name">Name: </label>
-            <input type="text" value={ newName } onChange={handleNameChange} />
-          </div>
-          <div>
-            <label htmlFor="phone">Phone: </label>
-            <input type="text" value={ newNumber } onChange={handleNumberChange} />
-          </div>
-        </div>
-        <div><button type="submit">Add</button></div>
-      </form>
+      <PersonForm  handleSubmit = {handleSubmit} newName= {newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
       <h2>Numbers</h2>
-      <div> {newName}  {newNumber} </div>
-      <div>
-        {
-          !searchResults
-          ? persons.map((person, index) => {
-            return (
-              <div key={index}>
-                <p> {index + 1 }. { person.name } {person.phone} </p>
-              </div>
-            );
-          })
-          : searchResults.map((search, index) => {
-            return (
-              <div key={index}>
-                <p> {index + 1 }. { search.name } {search.phone} </p>
-              </div>
-            );
-          })
-        } 
-          
-      </div>
+      <PersonList searchResults={searchResults} persons={persons} />
     </div>
   );
 }
