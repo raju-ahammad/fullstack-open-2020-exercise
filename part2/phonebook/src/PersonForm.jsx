@@ -9,7 +9,7 @@ const PersonForm = ({handleSubmit, newName, handleNameChange, newNumber, handleN
             <input type="text" value={ newName } onChange={handleNameChange} />
           </div>
           <div>
-            <label htmlFor="phone">Phone: </label>
+            <label htmlFor="phone">Number: </label>
             <input type="text" value={ newNumber } onChange={handleNumberChange} />
           </div>
         </div>

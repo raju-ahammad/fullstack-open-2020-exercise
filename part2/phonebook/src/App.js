@@ -1,20 +1,27 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import PersonForm from "./PersonForm";
 import PersonList from "./PersonList";
 import SearchFilter from "./SearchFilter";
 
 function App() {
 
-  const initialPerson = [
-    { name: 'Arto Hellas', number: '040-123456' },
-    { name: 'Ada Lovelace', number: '39-44-5323523' },
-    { name: 'Dan Abramov', number: '12-43-234345' },
-    { name: 'Mary Poppendieck', number: '39-23-6423122' }
-  ]
-  const [persons, setPersons] = useState(initialPerson)
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState("")
   const [newNumber, setNewNumber] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+
+  useEffect(() => {
+    console.log("effect");
+    axios
+      .get("http://localhost:3001/persons")
+      .then((res) => {
+        console.log(res.data);
+        setPersons(res.data)
+      })
+      .catch((err) => console.log(err))
+  }, [])
+  console.log("total",persons.length, "person");
 
   const searchHandle = (e) => {
     setSearchTerm(e.target.value)
@@ -40,7 +47,7 @@ function App() {
       if (person.name === newName){
         return alert(`${person.name} is already added to phonebook `)
       }else{
-        setPersons([...persons, {name: newName, phone: newNumber}])
+        setPersons([...persons, {name: newName, number: newNumber}])
         setNewName("")
         setNewNumber("")
       }
