@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 function App() {
   const [countries, setCountrie] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [showCountry, setShowCountry] = useState(false)
 
   useEffect(() => {
     axios
@@ -20,10 +21,22 @@ function App() {
   }
   console.log(searchTerm);
 
+  console.log("show", showCountry);
+
   const searchResult =  countries
                         .filter((country) => country.name.toLocaleLowerCase()
                         .includes(searchTerm.toLocaleLowerCase())); 
-console.log("search:",searchResult.length);
+
+  
+  const handleShowCountry = (name) => {
+    const show = searchResult.filter((sname, index) => sname.name === name)
+    console.log("Show filter", show);
+    setCountrie(show)
+    setShowCountry(true)
+    console.log("clicked");
+   
+  }                      
+
 
   return (
     <div className="App">
@@ -56,8 +69,7 @@ console.log("search:",searchResult.length);
         </div>
         :searchResult.map((search, index) => {
           return ( <div key={index}>
-              <p>{search.name} </p>
-
+          <p>{search.name} <button onClick = {() => handleShowCountry(search.name)} >show</button> </p>
           </div> );
         })
       }
