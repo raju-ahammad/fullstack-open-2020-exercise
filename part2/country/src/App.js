@@ -1,9 +1,17 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+
+const baseUrl = "http://api.weatherstack.com";
+const api_key = process.env.REACT_APP_API_KEY
+
 function App() {
   const [countries, setCountrie] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [showCountry, setShowCountry] = useState(false)
+  const [weatherCountry, setWeatherCountry] = useState("")
+  const [singleWearther, setSingleWeather] = useState("Dhaka")
+
+
 
   useEffect(() => {
     axios
@@ -14,6 +22,9 @@ function App() {
       })
       .catch((err) => console.log(err))
   }, [])
+
+  
+
   console.log("Total", countries.length, "Countries");
 
   const handleSearchTerm = (e) => {
@@ -28,14 +39,25 @@ function App() {
                         .includes(searchTerm.toLocaleLowerCase())); 
 
   
-  const handleShowCountry = (name) => {
-    const show = searchResult.filter((sname, index) => sname.name === name)
-    console.log("Show filter", show);
+  const handleShowCountry = (nam) => {
+    const show = searchResult.filter((sname, index) => sname.name === nam)
     setCountrie(show)
+    setSingleWeather(show[0].name)
     setShowCountry(true)
-    console.log("clicked");
-   
-  }                      
+  } 
+
+  
+  useEffect(() => {
+    axios
+      .get(`${baseUrl}/current?access_key=${api_key}&query=${singleWearther}`)
+      .then((response) => {
+        setWeatherCountry(response.data)
+      })
+      .catch((err) => console.log(err))
+  },[singleWearther])
+
+  
+
 
 
   return (
@@ -63,6 +85,10 @@ function App() {
                 }
               </p>
                 <img src={country.flag} alt=""/>
+              <h3>Weather in <b>{ weatherCountry.location.name }</b></h3>
+              <h4><b>Temparature: </b> {weatherCountry.current.temperature} Celcius </h4>
+              <img src={weatherCountry.current.weather_icons} alt=""/>
+              <p><b>{ weatherCountry.current.wind_speed } </b> mph direction <b>{ weatherCountry.current.wind_dir }</b></p>
               </div> );
             })
           }
