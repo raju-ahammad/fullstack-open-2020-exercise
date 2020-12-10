@@ -87,6 +87,20 @@ function App() {
       .catch((err)=>console.log(err))
   };
 
+  const updateNumber = () => {
+    const updateName = persons.find(p => p.name === newName)
+    const updateObj = {
+      ...updateName,
+      number: newNumber
+    }
+    phonebookServce
+    .update(updateObj.id, updateObj)
+    .then((res) => {
+      alert(`${res.name} is the already added to phonebook , replace the phone number`)
+      setPersons(persons.map(person => person.id === res.id  ? res : person))
+    })
+  }
+
   return (
     <div className="">
       <h2>PhoneBook</h2>
