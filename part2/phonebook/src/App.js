@@ -1,8 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import PersonForm from "./PersonForm";
 import PersonList from "./PersonList";
+import phonebookServce from "./phonebookService";
 import SearchFilter from "./SearchFilter";
+
 
 function App() {
 
@@ -12,9 +13,8 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    console.log("effect");
-    axios
-      .get("http://localhost:3001/persons")
+       phonebookServce
+       .getAll()
       .then((res) => {
         console.log(res.data);
         setPersons(res.data)
@@ -30,7 +30,6 @@ function App() {
   const searchResults = !searchTerm 
           ? persons 
           : persons.filter(person => person.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()));
-  
   const handleNameChange = (e) => {
     setNewName(e.target.value)
   }
@@ -55,15 +54,54 @@ function App() {
     
     
   }
+  console.log("search result: ", searchResults);
+
+
+  const addPhoneBook = (event) => {
+    event.preventDefault();
+
+    const newObj = {
+      name : newName,
+      number: newNumber,
+      id : persons.length + 1
+    }
+    console.log(newObj.name);
+    phonebookServce
+    .create(newObj)
+    .then((res) => {
+      console.log("adding data: ",res.data);
+      setPersons(persons.concat(res.data))
+      setNewName("")
+      setNewNumber("")
+    })
+    .catch((err) => console.log(err))
+  }
+
+  const deleteHandle = (id) => {
+    phonebookServce
+      .deleteItem(id)
+      .then((res)=> {
+        console.log("delete item:", res.data);
+        setPersons(persons.filter((person) => person.id !== id))
+      })
+      .catch((err)=>console.log(err))
+  };
 
   return (
     <div className="">
       <h2>PhoneBook</h2>
       <SearchFilter searchHandle={searchHandle} searchTerm={searchTerm} />
       <h2>Added new phone list</h2>
-      <PersonForm  handleSubmit = {handleSubmit} newName= {newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
+      <PersonForm  
+            handleSubmit = {handleSubmit}  
+            newName= {newName} 
+            handleNameChange={handleNameChange} 
+            newNumber={newNumber} 
+            addPhoneBook = {addPhoneBook}
+            handleNumberChange={handleNumberChange}
+      />
       <h2>Numbers</h2>
-      <PersonList searchResults={searchResults} persons={persons} />
+      <PersonList searchResults={searchResults} deleteHandle={ deleteHandle } persons={persons} />
     </div>
   );
 }

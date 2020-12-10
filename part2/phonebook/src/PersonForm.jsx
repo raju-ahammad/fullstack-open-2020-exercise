@@ -1,8 +1,8 @@
 import React from 'react'
 
-const PersonForm = ({handleSubmit, newName, handleNameChange, newNumber, handleNumberChange}) => {
+const PersonForm = ({handleSubmit, addPhoneBook, newName, handleNameChange, newNumber, handleNumberChange}) => {
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={addPhoneBook}>
         <div>
           <div>
             <label htmlFor="name">Name: </label>

@@ -12,7 +12,6 @@ function App() {
   const [singleWearther, setSingleWeather] = useState("Dhaka")
 
 
-
   useEffect(() => {
     axios
       .get("https://restcountries.eu/rest/v2/all")
@@ -44,6 +43,8 @@ function App() {
     setCountrie(show)
     setSingleWeather(show[0].name)
     setShowCountry(true)
+
+   
   } 
 
   
@@ -52,6 +53,7 @@ function App() {
       .get(`${baseUrl}/current?access_key=${api_key}&query=${singleWearther}`)
       .then((response) => {
         setWeatherCountry(response.data)
+
       })
       .catch((err) => console.log(err))
   },[singleWearther])
