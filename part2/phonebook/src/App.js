@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Notification from "./Notification";
 import PersonForm from "./PersonForm";
 import PersonList from "./PersonList";
 import phonebookServce from "./phonebookService";
@@ -11,6 +12,7 @@ function App() {
   const [newName, setNewName] = useState("")
   const [newNumber, setNewNumber] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
        phonebookServce
@@ -71,6 +73,10 @@ function App() {
     .then((res) => {
       console.log("adding data: ",res.data);
       setPersons(persons.concat(res.data))
+      setErrorMessage(`Added ${res.data.name}`)
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
       setNewName("")
       setNewNumber("")
     })
@@ -99,12 +105,19 @@ function App() {
       alert(`${res.name} is the already added to phonebook , replace the phone number`)
       setPersons(persons.map(person => person.id === res.id  ? res : person))
     })
+    .catch((err) => {
+      setErrorMessage(`the note '${updateName}' was already deleted from server`)
+      setPersons(persons.filter(n => n.id !== updateObj.id))
+    })
   }
 
   return (
     <div className="">
       <h2>PhoneBook</h2>
       <SearchFilter searchHandle={searchHandle} searchTerm={searchTerm} />
+      {
+        !errorMessage ? <div></div> : <Notification message = {errorMessage}/>
+      }
       <h2>Added new phone list</h2>
       <PersonForm  
             handleSubmit = {handleSubmit}  
