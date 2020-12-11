@@ -1,136 +1,125 @@
-import { useEffect, useState } from "react";
-import Notification from "./Notification";
-import PersonForm from "./PersonForm";
-import PersonList from "./PersonList";
-import phonebookServce from "./phonebookService";
-import SearchFilter from "./SearchFilter";
+import React, { useEffect, useState } from 'react'
+import Filter from './components/Filter'
+import Notification from './components/Notification'
+import PersonForm from './components/PersonForm'
+import Persons from './components/Persons'
+import personService from './services/persons'
 
-
-function App() {
-
+const App = () => {
   const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState("")
-  const [newNumber, setNewNumber] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [errorMessage, setErrorMessage] = useState("")
+  const [ newName, setNewName ] = useState('')
+  const [ newNumber, setNewNumber ] = useState('')
+  const [ filterString, setStringFilter ] = useState('')
+  const [ notification, setNotification ] = useState(null)
 
   useEffect(() => {
-       phonebookServce
-       .getAll()
-      .then((res) => {
-        console.log(res.data);
-        setPersons(res.data)
+    personService
+      .getAll()
+      .then((data) => {
+        setPersons(data)
       })
-      .catch((err) => console.log(err))
+
   }, [])
-  console.log("total",persons.length, "person");
 
-  const searchHandle = (e) => {
-    setSearchTerm(e.target.value)
+  const notifyWith = (message, type='success') => {
+    setNotification({ message, type })
+    setTimeout(() => {
+      setNotification(null)
+    }, 5000)
   }
 
-  const searchResults = !searchTerm 
-          ? persons 
-          : persons.filter(person => person.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()));
-  const handleNameChange = (e) => {
-    setNewName(e.target.value)
-  }
-  const handleNumberChange = (e) => {
-    setNewNumber(e.target.value)
-  }
+  const handleNameChange = (event) => {
+    setNewName(event.target.value)
+  }  
+  
+  const handleNumberChange = (event) => {
+    setNewNumber(event.target.value)
+  }  
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (newName === "" && newNumber === "") {
-      return alert("value is empty")
+  const handleFilterStringChange = (event) => {
+    setStringFilter(event.target.value)
+  } 
+
+  const deletePerson = (id) => {
+    const toDelete = persons.find(p => p.id === id)
+    const ok = window.confirm(`Delete ${toDelete.name}`)
+    if (ok) {
+      personService.remove(id)
+        .then(response => {
+          setPersons(persons.filter(p => p.id !== id))
+          notifyWith(`Deleted ${toDelete.name}`)
+        }).catch(() => {
+          setPersons(persons.filter(p => p.id !== id))
+          notifyWith(`${toDelete.name} had already been removed`, 'error')
+        })
     }
-    persons.forEach((person) => {
-      if (person.name === newName){
-        return alert(`${person.name} is already added to phonebook `)
-      }else{
-        setPersons([...persons, {name: newName, number: newNumber}])
-        setNewName("")
-        setNewNumber("")
+  }
+
+  const addPerson = (event) => {
+    event.preventDefault()
+
+    const existing = persons.find(p => p.name === newName)
+    if (existing) {
+      const ok = window.confirm(`${existing.name} already in phonebook, replace the old number with new one?`)
+      if (ok) {
+        personService.update(existing.id, {
+          name: existing.name,
+          number:newNumber
+        }).then(retunedPerson => {
+          setPersons(persons.map(person => person.id !== existing.id ? person : retunedPerson))
+          notifyWith(`Changed number of  ${existing.name}`)
+          setNewName('')
+          setNewNumber('')
+        })
       }
-    })
-    
-    
-  }
-  console.log("search result: ", searchResults);
 
-
-  const addPhoneBook = (event) => {
-    event.preventDefault();
-
-    const newObj = {
-      name : newName,
-      number: newNumber,
-      id : persons.length + 1
-    }
-    console.log(newObj.name);
-    phonebookServce
-    .create(newObj)
-    .then((res) => {
-      console.log("adding data: ",res.data);
-      setPersons(persons.concat(res.data))
-      setErrorMessage(`Added ${res.data.name}`)
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-      setNewName("")
-      setNewNumber("")
-    })
-    .catch((err) => console.log(err))
-  }
-
-  const deleteHandle = (id) => {
-    phonebookServce
-      .deleteItem(id)
-      .then((res)=> {
-        console.log("delete item:", res.data);
-        setPersons(persons.filter((person) => person.id !== id))
+    } else {
+      personService.create({
+        name: newName,
+        number: newNumber   
+      }).then(addedPerson => {
+        setPersons(persons.concat(addedPerson))
+        notifyWith(`Added ${newName}`)
+        setNewName('')
+        setNewNumber('')
+      }).catch(error => {
+        // pääset käsiksi palvelimen palauttamaan virheilmoitusolioon näin
+        console.log(error.response.data.error)
+        notifyWith(`${error.response.data.error} `, 'error')
       })
-      .catch((err)=>console.log(err))
-  };
-
-  const updateNumber = () => {
-    const updateName = persons.find(p => p.name === newName)
-    const updateObj = {
-      ...updateName,
-      number: newNumber
     }
-    phonebookServce
-    .update(updateObj.id, updateObj)
-    .then((res) => {
-      alert(`${res.name} is the already added to phonebook , replace the phone number`)
-      setPersons(persons.map(person => person.id === res.id  ? res : person))
-    })
-    .catch((err) => {
-      setErrorMessage(`the note '${updateName}' was already deleted from server`)
-      setPersons(persons.filter(n => n.id !== updateObj.id))
-    })
   }
+
+  const personsToShow = filterString.length === 0 ?
+    persons : 
+    persons.filter(p => p.name.toLowerCase().indexOf(filterString.toLowerCase()) > 0 )
 
   return (
-    <div className="">
-      <h2>PhoneBook</h2>
-      <SearchFilter searchHandle={searchHandle} searchTerm={searchTerm} />
-      {
-        !errorMessage ? <div></div> : <Notification message = {errorMessage}/>
-      }
-      <h2>Added new phone list</h2>
-      <PersonForm  
-            handleSubmit = {handleSubmit}  
-            newName= {newName} 
-            handleNameChange={handleNameChange} 
-            newNumber={newNumber} 
-            addPhoneBook = {addPhoneBook}
-            handleNumberChange={handleNumberChange}
+    <div>
+      <h2>Phonebook</h2>
+
+      <Notification notification={notification} />
+
+      filter shown with: 
+      <Filter
+        value={filterString}
+        onChange={handleFilterStringChange}
       />
-      <h2>Numbers</h2>
-      <PersonList searchResults={searchResults} deleteHandle={ deleteHandle } persons={persons} />
+
+      <h3>add a new</h3>
+      <PersonForm 
+        handleNameChange={handleNameChange}
+        handleNumberChange={handleNumberChange}
+        newNumber={newNumber}
+        newName={newName}
+        addPerson={addPerson}
+      />
+     
+      <h3>Numbers</h3>
+      <Persons persons={personsToShow} deletePerson={deletePerson}/>
     </div>
-  );
+  )
+
 }
 
-export default App;
+export default App 
